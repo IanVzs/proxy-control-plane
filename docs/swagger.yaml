@@ -1,0 +1,801 @@
+basePath: /
+definitions:
+  config.Provider:
+    properties:
+      countries:
+        items:
+          type: string
+        type: array
+      enabled:
+        type: boolean
+      host:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      type:
+        type: string
+      username:
+        type: string
+    type: object
+  config.ProviderWeight:
+    properties:
+      provider_id:
+        type: string
+      weight:
+        type: integer
+    type: object
+  config.Service:
+    properties:
+      enabled:
+        type: boolean
+      last_request_at:
+        type: integer
+      name:
+        type: string
+      providers:
+        items:
+          $ref: '#/definitions/config.ProviderWeight'
+        type: array
+      request_count:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: 代理控制平面 API - 管理多个代理服务，支持权重分配、使用统计等功能
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Proxy Control Plane API
+  version: "1.0"
+paths:
+  /api/assign:
+    get:
+      description: 根据权重为服务分配代理提供商
+      parameters:
+      - description: 服务名称
+        in: query
+        name: service
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 代理分配
+      tags:
+      - 代理
+  /api/providers:
+    get:
+      description: 获取所有代理提供商列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取所有代理提供商
+      tags:
+      - 代理提供商
+    post:
+      consumes:
+      - application/json
+      description: 创建新的代理提供商
+      parameters:
+      - description: 代理提供商信息
+        in: body
+        name: provider
+        required: true
+        schema:
+          $ref: '#/definitions/config.Provider'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Provider'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 创建代理提供商
+      tags:
+      - 代理提供商
+  /api/providers/{id}:
+    delete:
+      description: 删除指定ID的代理提供商
+      parameters:
+      - description: 提供商ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 删除代理提供商
+      tags:
+      - 代理提供商
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的代理提供商
+      parameters:
+      - description: 提供商ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 代理提供商信息
+        in: body
+        name: provider
+        required: true
+        schema:
+          $ref: '#/definitions/config.Provider'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Provider'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 更新代理提供商
+      tags:
+      - 代理提供商
+  /api/services:
+    get:
+      description: 获取所有服务列表及今日使用统计
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取所有服务
+      tags:
+      - 服务管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的服务
+      parameters:
+      - description: 服务名称
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Service'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 创建服务
+      tags:
+      - 服务管理
+  /api/services/{name}:
+    delete:
+      description: 删除指定服务
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 删除服务
+      tags:
+      - 服务管理
+    get:
+      description: 获取指定服务的详细信息和今日使用统计
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 获取服务详情
+      tags:
+      - 服务管理
+  /api/services/{name}/enabled:
+    put:
+      consumes:
+      - application/json
+      description: 设置服务的启用状态
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 启用状态
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: boolean
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Service'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 启用/禁用服务
+      tags:
+      - 服务管理
+  /api/services/{name}/providers:
+    post:
+      consumes:
+      - application/json
+      description: 为指定服务添加代理提供商并设置权重
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 提供商ID和权重
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Service'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 为服务添加代理提供商
+      tags:
+      - 服务管理
+  /api/services/{name}/providers/{providerId}:
+    delete:
+      description: 从指定服务移除代理提供商
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 提供商ID
+        in: path
+        name: providerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Service'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 从服务移除代理提供商
+      tags:
+      - 服务管理
+  /api/services/{name}/providers/{providerId}/weight:
+    put:
+      consumes:
+      - application/json
+      description: 更新服务中指定代理提供商的权重
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: 提供商ID
+        in: path
+        name: providerId
+        required: true
+        type: string
+      - description: 权重值
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: integer
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/config.Service'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 更新代理提供商权重
+      tags:
+      - 服务管理
+  /api/services/{name}/usage:
+    get:
+      description: 获取指定服务的每日使用统计
+      parameters:
+      - description: 服务名称
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: 获取服务使用统计
+      tags:
+      - 服务管理
+  /health:
+    get:
+      description: 检查服务是否正常运行
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+      summary: 健康检查
+      tags:
+      - 系统
+  /proxy:
+    delete:
+      description: 通过代理转发请求到目标URL
+      parameters:
+      - description: 目标URL
+        in: header
+        name: X-Target-Url
+        required: true
+        type: string
+      - description: 服务名称
+        in: header
+        name: X-Service-Name
+        type: string
+      - description: 国家代码
+        in: header
+        name: X-Proxy-Country
+        type: string
+      - description: 区域代码
+        in: header
+        name: X-Proxy-Region
+        type: string
+      - description: 会话ID
+        in: header
+        name: X-Proxy-Session
+        type: string
+      - description: 代理时长
+        in: header
+        name: X-Proxy-Duration
+        type: string
+      - description: 提供商ID
+        in: header
+        name: X-Proxy-Provider
+        type: string
+      responses:
+        "200":
+          description: 目标服务器响应
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 透明代理
+      tags:
+      - 代理
+    get:
+      description: 通过代理转发请求到目标URL
+      parameters:
+      - description: 目标URL
+        in: header
+        name: X-Target-Url
+        required: true
+        type: string
+      - description: 服务名称
+        in: header
+        name: X-Service-Name
+        type: string
+      - description: 国家代码
+        in: header
+        name: X-Proxy-Country
+        type: string
+      - description: 区域代码
+        in: header
+        name: X-Proxy-Region
+        type: string
+      - description: 会话ID
+        in: header
+        name: X-Proxy-Session
+        type: string
+      - description: 代理时长
+        in: header
+        name: X-Proxy-Duration
+        type: string
+      - description: 提供商ID
+        in: header
+        name: X-Proxy-Provider
+        type: string
+      responses:
+        "200":
+          description: 目标服务器响应
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 透明代理
+      tags:
+      - 代理
+    post:
+      description: 通过代理转发请求到目标URL
+      parameters:
+      - description: 目标URL
+        in: header
+        name: X-Target-Url
+        required: true
+        type: string
+      - description: 服务名称
+        in: header
+        name: X-Service-Name
+        type: string
+      - description: 国家代码
+        in: header
+        name: X-Proxy-Country
+        type: string
+      - description: 区域代码
+        in: header
+        name: X-Proxy-Region
+        type: string
+      - description: 会话ID
+        in: header
+        name: X-Proxy-Session
+        type: string
+      - description: 代理时长
+        in: header
+        name: X-Proxy-Duration
+        type: string
+      - description: 提供商ID
+        in: header
+        name: X-Proxy-Provider
+        type: string
+      responses:
+        "200":
+          description: 目标服务器响应
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 透明代理
+      tags:
+      - 代理
+    put:
+      description: 通过代理转发请求到目标URL
+      parameters:
+      - description: 目标URL
+        in: header
+        name: X-Target-Url
+        required: true
+        type: string
+      - description: 服务名称
+        in: header
+        name: X-Service-Name
+        type: string
+      - description: 国家代码
+        in: header
+        name: X-Proxy-Country
+        type: string
+      - description: 区域代码
+        in: header
+        name: X-Proxy-Region
+        type: string
+      - description: 会话ID
+        in: header
+        name: X-Proxy-Session
+        type: string
+      - description: 代理时长
+        in: header
+        name: X-Proxy-Duration
+        type: string
+      - description: 提供商ID
+        in: header
+        name: X-Proxy-Provider
+        type: string
+      responses:
+        "200":
+          description: 目标服务器响应
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "403":
+          description: Forbidden
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 透明代理
+      tags:
+      - 代理
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
